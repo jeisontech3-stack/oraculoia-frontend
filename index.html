@@ -3,46 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OraculoIA - Plataforma Empresarial con IA</title>
-  <!-- Tailwind via CDN -->
+  <title>OraculoIA - Demo Frontend</title>
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React desde CDN -->
+  <!-- React desde CDN (versión producción) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" />
-  <!-- Axios -->
-  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js"></script>
+  <!-- Estilos -->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    * { font-family: 'Inter', sans-serif; }
     body { margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
     .apple-card { background: white; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     .apple-button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; padding: 12px 24px; font-weight: 600; cursor: pointer; }
     .apple-input { border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; width: 100%; outline: none; }
-    .table-responsive { overflow-x: auto; border-radius: 12px; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; }
-    th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px; text-align: left; }
-    td { padding: 16px; border-bottom: 1px solid #e2e8f0; }
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-content { background: white; border-radius: 20px; padding: 32px; max-width: 600px; width: 90%; }
-    .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
-    .badge-success { background: #d4edda; color: #155724; }
-    .whatsapp-widget { position: fixed; bottom: 24px; right: 24px; z-index: 1000; }
-    .whatsapp-button { background: #25D366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .apple-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
-  <!-- SCRIPT CONVERTIDO A JS Puro (sin Babel) -->
+  <!-- React App en JS puro (sin JSX, sin Babel) -->
   <script>
+    const { useState, useEffect, createContext, useContext } = React;
     const e = React.createElement;
-    const { useState, useEffect, useRef, createContext, useContext } = React;
 
-    // === Auth Context ===
+    // Auth Context
     const AuthContext = createContext(null);
     const AuthProvider = ({ children }) => {
       const [user, setUser] = useState(null);
@@ -52,34 +38,42 @@
           setUser({ name: 'Admin Demo', email: 'admin@oraculoia.com', role: 'ADMIN' });
         }
       }, [token]);
-      const login = async (email, password) => {
-        const mockToken = 'mock-jwt-token-' + Date.now();
+
+      const login = (email, password) => {
+        const mockToken = 'mock-jwt-' + Date.now();
         localStorage.setItem('token', mockToken);
         setToken(mockToken);
         setUser({ name: 'Admin Demo', email, role: 'ADMIN' });
         return true;
       };
+
       const logout = () => {
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);
       };
+
       return e(AuthContext.Provider, { value: { user, token, login, logout } }, children);
     };
+
     const useAuth = () => useContext(AuthContext);
 
-    // === Login Page ===
+    // Login Page
     const LoginPage = () => {
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
       const [loading, setLoading] = useState(false);
       const { login } = useAuth();
-      const handleSubmit = async (e) => {
+
+      const handleSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
-        await login(email, password);
-        setLoading(false);
+        setTimeout(() => {
+          login(email, password);
+          setLoading(false);
+        }, 500);
       };
+
       return e('div', { className: 'min-h-screen flex items-center justify-center p-4' },
         e('div', { className: 'apple-card w-full max-w-md p-8' },
           e('div', { className: 'text-center mb-8' },
@@ -93,7 +87,7 @@
                 className: 'apple-input',
                 placeholder: 'admin@oraculoia.com',
                 value: email,
-                onChange: (e) => setEmail(e.target.value)
+                onChange: (ev) => setEmail(ev.target.value)
               })
             ),
             e('div', { className: 'mb-6' },
@@ -102,44 +96,42 @@
                 className: 'apple-input',
                 placeholder: '••••••••',
                 value: password,
-                onChange: (e) => setPassword(e.target.value)
+                onChange: (ev) => setPassword(ev.target.value)
               })
             ),
             e('button', {
               type: 'submit',
               className: 'apple-button w-full',
               disabled: loading
-            }, loading ? 'Iniciando sesión...' : 'Iniciar Sesión')
+            }, loading ? 'Iniciando...' : 'Iniciar Sesión')
+          ),
+          e('p', { className: 'mt-6 text-center text-sm text-gray-600' },
+            'Demo: cualquier contraseña'
           )
         )
       );
     };
 
-    // === Simple Dashboard (solo para ejemplo) ===
+    // Dashboard simple
     const Dashboard = () => {
-      return e('div', { className: 'p-8' },
-        e('h1', { className: 'text-3xl font-bold text-white mb-4' }, '¡Bienvenido a OraculoIA!'),
-        e('p', { className: 'text-white' }, 'Este es un demo estático. El backend real no está disponible en GitHub Pages.')
+      const { logout } = useAuth();
+      return e('div', { className: 'p-8 text-white' },
+        e('h1', {}, '¡Bienvenido a OraculoIA!'),
+        e('p', {}, 'Esta es una demo visual. El backend real no está disponible en GitHub Pages.'),
+        e('button', {
+          onClick: logout,
+          className: 'mt-4 px-4 py-2 bg-red-500 text-white rounded'
+        }, 'Cerrar sesión')
       );
     };
 
-    // === App principal ===
     const App = () => {
       const { user } = useAuth();
-      if (!user) return e(LoginPage);
-      return e('div', { className: 'min-h-screen bg-gray-50 p-8' }, e(Dashboard));
+      return user ? e(Dashboard) : e(LoginPage);
     };
 
-    // === Render ===
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(e(AuthProvider, null, e(App)));
   </script>
-
-  <!-- WhatsApp flotante -->
-  <div class="whatsapp-widget">
-    <div class="whatsapp-button" onclick="window.open('https://wa.me/573148843501?text=Hola%20desde%20OraculoIA%20GitHub%20Pages', '_blank')">
-      <i class="fab fa-whatsapp text-3xl"></i>
-    </div>
-  </div>
 </body>
 </html>
